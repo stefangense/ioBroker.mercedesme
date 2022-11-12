@@ -574,6 +574,7 @@ class Mercedesme extends utils.Adapter {
   async getVehicles() {
     const headers = this.baseHeader;
     headers.Authorization = this.atoken;
+    this.log.debug("ACCESS_TOKEN = " + this.atoken);
     await axios({
       method: "get",
       headers: headers,
