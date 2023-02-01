@@ -8,7 +8,7 @@
 const utils = require("@iobroker/adapter-core");
 const request = require("request");
 const { v4: uuidv4 } = require("uuid");
-const axios = require("axios");
+const axios = require("axios").default;
 const WebSocket = require("ws");
 
 // const Eventpush = require("./Proto/eventpush_pb");
@@ -55,7 +55,11 @@ class Mercedesme extends utils.Adapter {
       if (states) {
         const allIds = Object.keys(states);
         allIds.forEach((keyName) => {
-          if (keyName.split(".")[3] === "status" || keyName.split(".")[3] === "location" || keyName.split(".")[3] === "lastJourney") {
+          if (
+            keyName.split(".")[3] === "status" ||
+            keyName.split(".")[3] === "location" ||
+            keyName.split(".")[3] === "lastJourney"
+          ) {
             this.delObject(keyName.split(".").slice(2).join("."));
           }
         });
@@ -63,7 +67,7 @@ class Mercedesme extends utils.Adapter {
     });
     this.config.acceptLanguage = this.config.acceptLanguage ? this.config.acceptLanguage : "de-DE";
     this.baseHeader = {
-      "RIS-OS-Version": "14.6",
+      "RIS-OS-Version": "14.8",
       "X-TrackingId": this.xTracking,
       "RIS-OS-Name": "ios",
       "X-SessionId": this.xSession,
@@ -72,9 +76,9 @@ class Mercedesme extends utils.Adapter {
       "Accept-Language": "de-DE;q=1.0",
       "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
       "X-Request-Id": this.xTracking,
-      "RIS-SDK-Version": "2.43.0",
-      "User-Agent": "MyCar/1.11.0 (com.daimler.ris.mercedesme.ece.ios; build:1051; iOS 12.5.1) Alamofire/5.4.0",
-      "ris-application-version": "1.11.0 (1051)",
+      "RIS-SDK-Version": "9.99.0",
+      "User-Agent": "MyCar/1.27.0 (com.daimler.ris.mercedesme.ece.ios; build:1719; iOS 14.8.0) Alamofire/5.4.0",
+      "ris-application-version": "1.27.0 (1719)",
       "device-uuid": this.deviceuuid,
       "X-Locale": this.config.acceptLanguage,
     };
@@ -418,7 +422,9 @@ class Mercedesme extends utils.Adapter {
                 const startState = (await this.getStateAsync(vin + ".history." + startDate)) || { val: "" };
                 const startDateValue = startState.val;
                 const startDateArray = startDateValue.split(".");
-                const startDateValueDate = new Date(startDateArray[1] + "-" + startDateArray[0] + "-" + startDateArray[2]);
+                const startDateValueDate = new Date(
+                  startDateArray[1] + "-" + startDateArray[0] + "-" + startDateArray[2],
+                );
                 const diffTime = Math.abs(d - startDateValueDate);
                 const diff = Math.ceil(diffTime / (1000 * 60));
 
@@ -435,7 +441,9 @@ class Mercedesme extends utils.Adapter {
                   duration: diff,
                   perHour: quantity / diff / 60,
                 };
-                const currenJsonHistoryState = (await this.getStateAsync(vin + ".history." + jsonString)) || { val: {} };
+                const currenJsonHistoryState = (await this.getStateAsync(vin + ".history." + jsonString)) || {
+                  val: {},
+                };
 
                 let currenJsonHistory = [];
                 if (currenJsonHistory) {
@@ -505,7 +513,7 @@ class Mercedesme extends utils.Adapter {
           "&rad=4&sort=dist&type=" +
           this.config.gas +
           "&apikey=" +
-          this.config.apiKey
+          this.config.apiKey,
       );
       request.get(
         {
@@ -535,7 +543,7 @@ class Mercedesme extends utils.Adapter {
           } catch (error) {
             resolve(0);
           }
-        }
+        },
       );
     });
   }
@@ -565,7 +573,11 @@ class Mercedesme extends utils.Adapter {
       if (element.toLowerCase().indexOf("emperature") !== -1) {
         unit = "°c";
       }
-      if (element.toLowerCase().indexOf("level") !== -1 || element.toLowerCase().indexOf("percent") !== -1 || element === "soc") {
+      if (
+        element.toLowerCase().indexOf("level") !== -1 ||
+        element.toLowerCase().indexOf("percent") !== -1 ||
+        element === "soc"
+      ) {
         unit = "%";
       }
     }
@@ -887,7 +899,13 @@ class Mercedesme extends utils.Adapter {
                       command["parameters"].forEach(async (parameter) => {
                         Object.keys(parameter).forEach(async (pKey) => {
                           await this.setObjectNotExistsAsync(
-                            vin + ".commands." + command.commandName + ".parameters." + parameter.parameterName + "." + pKey,
+                            vin +
+                              ".commands." +
+                              command.commandName +
+                              ".parameters." +
+                              parameter.parameterName +
+                              "." +
+                              pKey,
                             {
                               type: "state",
                               common: {
@@ -898,12 +916,18 @@ class Mercedesme extends utils.Adapter {
                                 read: true,
                               },
                               native: {},
-                            }
+                            },
                           );
                           this.setState(
-                            vin + ".commands." + command.commandName + ".parameters." + parameter.parameterName + "." + pKey,
+                            vin +
+                              ".commands." +
+                              command.commandName +
+                              ".parameters." +
+                              parameter.parameterName +
+                              "." +
+                              pKey,
                             JSON.stringify(parameter[pKey]),
-                            true
+                            true,
                           );
                         });
                       });
@@ -943,7 +967,7 @@ class Mercedesme extends utils.Adapter {
               this.log.error(error);
               reject();
             }
-          }
+          },
         );
       });
     });
@@ -987,7 +1011,7 @@ class Mercedesme extends utils.Adapter {
               this.log.error(error);
               reject();
             }
-          }
+          },
         );
       });
     });
@@ -1029,7 +1053,7 @@ class Mercedesme extends utils.Adapter {
               this.log.error(error);
               reject();
             }
-          }
+          },
         );
       });
     });
@@ -1247,7 +1271,7 @@ class Mercedesme extends utils.Adapter {
             this.setState("auth.refresh_token", "", true);
             reject();
           }
-        }
+        },
       );
     });
   }
@@ -1439,7 +1463,11 @@ class Mercedesme extends utils.Adapter {
           this.ws.send(clientMessage.serializeBinary());
           try {
             if (message.apptwinCommandStatusUpdatesByVin.updatesByVinMap[0][1].updatesByPidMap[0][1].errorsList.length)
-              this.log.error(JSON.stringify(message.apptwinCommandStatusUpdatesByVin.updatesByVinMap[0][1].updatesByPidMap[0][1].errorsList));
+              this.log.error(
+                JSON.stringify(
+                  message.apptwinCommandStatusUpdatesByVin.updatesByVinMap[0][1].updatesByPidMap[0][1].errorsList,
+                ),
+              );
           } catch (error) {
             this.log.error(error);
           }
